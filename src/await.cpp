@@ -2,8 +2,24 @@
 
 namespace await
 {
-	int hello()
+	void connect(QAbstractSocket * socket, const QString & hostName, quint16 port, 
+				 QIODevice::OpenMode openMode, QAbstractSocket::NetworkLayerProtocol protocol)
 	{
-		return 123;
+		socket->connectToHost(hostName, port, openMode, protocol);
+		QFiber::wait(socket, SIGNAL(connected()));
+	}
+
+
+	QByteArray read(QIODevice * s)
+	{
+		if (!s->bytesAvailable())
+		{
+			QFiber::wait(s, SIGNAL(readyRead()));
+		}
+		return s->readAll();
+	}
+	void write(QIODevice * s, const QByteArray & a)
+	{
+		s->write(a);
 	}
 }
